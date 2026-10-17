@@ -1,0 +1,63 @@
+# ============ Python 通用 ============
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 虚拟环境
+.venv/
+venv/
+env/
+ENV/
+
+# 构建 / 打包产物
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# ============ 数据集下载（download.py 产物，体积大）============
+# VoiceBank-DEMAND 数据集压缩包（约 5.5GB）
+downloads/
+*.zip
+
+# ============ 处理后数据（prepare.py 产物）============
+# wav16k 音频 + manifest 清单（manifest 内含本机绝对路径，勿提交）
+data_real/
+*.wav
+*.flac
+
+# ============ 训练权重与运行产物 ============
+# train_demo.py 保存的 best.pt / last.pt
+runs/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# ============ 增强输出（evaluate.py 导出的试听音频）============
+enhanced/
+enhanced_vbd/
+
+# ============ 密钥与环境变量 ============
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# ============ 运行日志与系统文件 ============
+*.log
+nohup.out
+.DS_Store
+Thumbs.db
+
+# ============ 编辑器 / IDE ============
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ============ Jupyter ============
+.ipynb_checkpoints/

@@ -1,0 +1,22 @@
+# 快速冒烟预设: 只验证链路能不能跑通, 几十秒出结果
+#
+#   python train_demo.py --config quick
+#   python evaluate.py  --config quick --limit 5
+#
+# 这里只写与 default.yaml 不同的项, 其余自动继承 default.yaml。
+
+train:
+  epochs:     1
+  max_steps:  10      # 每轮只跑 10 个 batch
+  batch_size: 4
+  num_workers: 0      # Windows 下排障首选
+  segment:    2.0
+
+dataset:
+  num_workers: 0
+
+eval:
+  limit: 5
+
+paths:
+  runs: "runs/_quick"   # 别把冒烟产物混进正式目录

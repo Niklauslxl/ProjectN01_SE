@@ -1,0 +1,125 @@
+# =============================================================================
+# VoiceBank-DEMAND 主配置文件
+#
+# 这是项目里 **唯一** 需要改路径的地方。代码本身不含任何硬编码路径。
+#
+# 用法:
+#   python prepare.py                       # 默认读本文件
+#   python train_demo.py --config default   # 也可以只写简写名
+#   VBD_CONFIG=config/data48k.yaml python prepare.py
+#   python train_demo.py --set train.epochs=5     # 临时覆盖某一项
+#
+# 覆盖优先级: 命令行参数 > --set > 本文件 > config.py 里的内置默认值
+# =============================================================================
+
+paths:
+  # 所有相对路径的基准。 "." = 项目根目录(config.py 所在目录)
+  # 想把所有数据放到 D 盘就写 "D:/datasets/voicebank" 之类的绝对路径
+  root: "."
+
+  downloads:  "downloads"      # download.py 存放原始 zip 的目录
+  data:       "data_real"      # prepare.py 输出根目录(wav 与 manifest 都在这下面)
+  runs:       "runs/vbd_base"  # train_demo.py 存放 checkpoint 的目录
+  enhanced:   "enhanced"       # evaluate.py --dump 导出试听音频的目录
+
+  # ---- 目录命名规则(支持 {sr}=kHz 数、{spk}=说话人数 两个占位符)
+  # 例: sr=16000 -> wav16k; 改成 "wav" 就会变成 data_real/wav/train/clean
+  wav_dir:         "wav{sr}k"
+  manifest_dir:    "manifest"
+  manifest_suffix: ".csv"
+
+  # ---- download.py 下载出来的 zip 文件名
+  zip:
+    clean_train: "clean_trainset_{spk}spk_wav.zip"
+    noisy_train: "noisy_trainset_{spk}spk_wav.zip"
+    clean_test:  "clean_testset_wav.zip"
+    noisy_test:  "noisy_testset_wav.zip"
+
+  # ---- 子集与通道目录名(改这两个列表就能改整个目录结构)
+  splits: ["train", "valid", "test"]
+  kinds:  ["clean", "noisy"]
+
+# -----------------------------------------------------------------------------
+# 下载
+# -----------------------------------------------------------------------------
+download:
+  base_url:  "https://datashare.ed.ac.uk/bitstreams"
+  spk:       28          # 28 或 56(56 说话人版约 10.5GB)
+  only_test: false
+  proxy:     null        # 例: "http://127.0.0.1:7890"，国内下载建议配
+  retries:   5
+  insecure:  false       # 证书校验失败时设 true(等价于旧版 VBD_INSECURE=1)
+
+  # DataShare 的 bitstream id: [id, 近似大小MB, 说明]
+  # 若官网换链, 只改这里, 不用动 download.py
+  files:
+    clean_trainset_28spk_wav: ["245452b6-6235-44b6-a6f9-e7eb19797769", 2380.0, "28说话人 干净训练集"]
+    noisy_trainset_28spk_wav: ["ecb5a102-bb00-46d3-8af5-40c79823b837", 2700.0, "28说话人 带噪训练集"]
+    clean_trainset_56spk_wav: ["386ac199-5d34-402f-8112-2a123577dd57", 4548.0, "56说话人 干净训练集"]
+    noisy_trainset_56spk_wav: ["60506429-e89f-4ae5-a28f-da63238d11cb", 5366.0, "56说话人 带噪训练集"]
+    clean_testset_wav:        ["dec213d3-bf57-4777-9663-c24bdce92d5e",  147.2, "干净测试集"]
+    noisy_testset_wav:        ["13c1bfbf-14a6-41db-9b41-8f7310f01ad5",  162.7, "带噪测试集"]
+
+# -----------------------------------------------------------------------------
+# 数据准备(prepare.py)
+# -----------------------------------------------------------------------------
+data:
+  sr:         16000       # 8000 / 16000 / 24000 / 48000
+  spk:        28
+  val_spks:   "p282,p287" # 验证集说话人(逗号分隔)，与多数论文一致
+  val_ratio:  0.0         # >0 时按说话人随机划分, 覆盖 val_spks
+  workers:    8
+  overwrite:  false
+  seed:       42
+
+# -----------------------------------------------------------------------------
+# 数据集/DataLoader(dataset.py)
+# -----------------------------------------------------------------------------
+dataset:
+  segment:         3.0        # 训练裁片长度(秒)
+  batch_size:      16
+  num_workers:     4
+  remix:           true       # SNR 重混合, 建议保持开启
+  snr_range:       [0.0, 20.0]
+  random_gain:     [0.7, 1.0]
+  repeat_if_short: true
+
+# -----------------------------------------------------------------------------
+# 模型与损失(train_demo.py)
+# -----------------------------------------------------------------------------
+model:
+  n_fft:    512
+  hop:      128
+  win:      512
+  channels: [16, 32, 64, 128]   # U-Net 各层通道数
+
+loss:
+  w_snr:      0.8     # SI-SNR 损失权重
+  w_mag:      0.2     # 幅度 L1 损失权重
+  clip_grad:  5.0
+
+# -----------------------------------------------------------------------------
+# 训练(train_demo.py)
+# -----------------------------------------------------------------------------
+train:
+  epochs:      40
+  batch_size:  16
+  lr:          1.0e-3
+  segment:     3.0
+  num_workers: 4
+  device:      "auto"    # auto / cpu / cuda
+  seed:        1234
+  resume:      null      # 想续训就填 runs/vbd_base/last.pt
+  max_steps:   0         # >0 时每轮只跑 N 个 batch(冒烟测试用)
+  patience:    0         # >0 时开启早停: 连续 N 轮无提升就收手
+  save_each:   false     # true = 每轮额外存 epoch_XXX.pt
+
+# -----------------------------------------------------------------------------
+# 评估(evaluate.py)
+# -----------------------------------------------------------------------------
+eval:
+  ckpt:   null      # null = 自动用 <paths.runs>/best.pt 例子：ckpt: "runs/real_base/best.pt"
+  limit:  0         # 只评估前 N 条, 0 = 全部
+  dump:   null      # 填目录名则导出 clean/noisy/est 三组 wav
+  sr:     16000
+  device: "auto"

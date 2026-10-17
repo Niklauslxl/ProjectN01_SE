@@ -1,0 +1,22 @@
+# 48 kHz 数据预设: 想复现某些 SpeechBrain 配方(原版测试集就是 48k)时用
+#
+#   python prepare.py    --config data48k
+#   python train_demo.py --config data48k
+#   python evaluate.py   --config data48k
+#
+# 注意: 48k 与 16k 的结果不可直接比较, 论文引用数字时务必看清楚采样率。
+# 只写与 default.yaml 不同的项, 其余自动继承。
+
+paths:
+  data: "data48k"       # 48k 数据单独一套目录, 与 16k 的 data_real 互不影响
+  runs: "runs/vbd_48k"
+
+data:
+  sr:    48000
+  workers: 8
+
+dataset:
+  segment: 3.0
+
+eval:
+  sr: 48000

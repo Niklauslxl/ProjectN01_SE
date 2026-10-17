@@ -1,0 +1,28 @@
+# =============================================================================
+# GPU 训练预设
+#
+# 用法:  python train_demo.py --config gpu
+#        python evaluate.py   --config gpu
+#
+# 只写与 default.yaml 不同的项，其余自动继承。
+# 前提: 装的是 **CUDA 版** torch（pip install torch --index-url .../whl/cu121）。
+#       装错成 CPU 版的话，train.device 会打印警告并自动退回 CPU。
+# =============================================================================
+
+# 输出到独立目录，跟 CPU 上跑出来的 runs/vbd_base 互不干扰
+paths:
+  runs: "runs/vbd_gpu"
+
+train:
+  device:      "cuda"   # auto / cuda / cuda:1 / cpu
+  epochs:      40
+  batch_size:  32       # 6 GB 显存建议 16；8 GB 以上可试 32/64
+  num_workers: 8        # GPU 上数据加载要跟得上，比 CPU 时开大一点
+  segment:     3.0
+  lr:          1.0e-3
+  patience:    8        # 连续 8 轮无提升就早停
+  save_each:   false
+
+# 评估也走 GPU（824 条从 CPU 的 45 秒降到几秒）
+eval:
+  device: "cuda"

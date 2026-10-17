@@ -1,0 +1,24 @@
+# 必需：核心链路（download / prepare / dataset / train / evaluate / serve）
+# -----------------------------------------------------------------------------
+PyYAML>=5.4          # 解析 config/*.yaml，配置中心的基础
+numpy>=1.24          # 数值计算
+scipy>=1.10          # prepare.py 重采样的回退实现（scipy.signal.resample_poly）
+soundfile>=0.12      # wav/flac 读写（依赖系统 libsndfile；Windows 版 wheel 已自带）
+torch>=2.1           # 深度学习框架：模型、训练、推理
+torchaudio>=2.1      # prepare.py 重采样的首选后端（torchaudio.transforms.Resample）
+pystoi>=0.3.3        # STOI 可懂度指标，纯 Python，Windows 上可直接装
+# -----------------------------------------------------------------------------
+
+
+# GPU 机器注意
+# -----------------------------------------------------------------------------
+# requirements.txt 里的 torch/torchaudio 会装成 CPU 版。
+# 要用显卡训练，先按驱动版本装 CUDA 版，再装本文件其余部分：
+#
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu126
+#   pip install -r requirements.txt --no-deps        # 避免把 torch 覆盖回 CPU 版
+#
+# 验证:  python -c "import torch; print(torch.cuda.is_available())"
+# 训练:  python train_demo.py --config gpu
+#
+# -----------------------------------------------------------------------------

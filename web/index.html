@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>语音增强演示 · VoiceBank-DEMAND</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="title">
+    <h1>语音增强演示</h1>
+    <span class="sub">本地离线 · 不上传任何数据</span>
+  </div>
+  <div class="model-info" id="modelInfo">模型加载中…</div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>1 · 音频输入</h2>
+    <div class="tabs">
+      <button class="tab active" data-tab="mic">实时录音</button>
+      <button class="tab" data-tab="file">音频文件</button>
+    </div>
+
+    <div class="tabbody active" id="tab-mic">
+      <div class="mic-row">
+        <button id="recBtn" class="primary">开始录音</button>
+        <span id="recTime" class="timer">00:00</span>
+        <span id="recHint" class="hint">点击后允许麦克风权限，说完再点停止</span>
+      </div>
+      <canvas id="liveCanvas" class="live-canvas" height="64"></canvas>
+    </div>
+
+    <div class="tabbody" id="tab-file">
+      <div id="dropZone" class="dropzone">
+        <strong>把音频文件拖到这里</strong>
+        <span>或点击选择（wav / mp3 / flac / m4a / ogg）</span>
+        <input type="file" id="fileInput" accept="audio/*" hidden>
+      </div>
+      <div id="fileMeta" class="filemeta"></div>
+    </div>
+
+    <div class="input-preview">
+      <div class="row-label">
+        <span>输入波形</span>
+        <span id="inputMeta" class="hint">尚未选择音频</span>
+      </div>
+      <canvas id="inputWave" class="wave" height="72"></canvas>
+      <audio id="inputAudio" controls></audio>
+    </div>
+
+    <button id="enhanceBtn" class="primary big" disabled>开始增强</button>
+  </section>
+
+  <section class="panel">
+    <h2>2 · 增强结果</h2>
+    <div id="status" class="status">等待输入</div>
+
+    <div class="spec-grid">
+      <figure>
+        <figcaption>增强前（含噪）</figcaption>
+        <canvas id="specBefore" class="spec"></canvas>
+        <div class="axis"><span>0 s</span><span id="durLabel1">—</span></div>
+      </figure>
+      <figure>
+        <figcaption>增强后（模型输出）</figcaption>
+        <canvas id="specAfter" class="spec"></canvas>
+        <div class="axis"><span>0 s</span><span id="durLabel2">—</span></div>
+      </figure>
+      <div class="freq-axis"><span>8 kHz</span><span>4 kHz</span><span>0</span></div>
+    </div>
+
+    <div class="play-row">
+      <div class="play-box">
+        <span class="tag">原始输入</span>
+        <audio id="outInput" controls></audio>
+      </div>
+      <div class="play-box">
+        <span class="tag accent">增强输出</span>
+        <audio id="outEnhanced" controls></audio>
+        <button id="playEnhanced" class="ghost small" disabled>试听增强输出</button>
+      </div>
+    </div>
+    <p class="tip" id="feedbackHint"></p>
+
+    <div class="metrics" id="metrics">
+      <div class="metric"><span class="label">噪声衰减</span><span class="value" id="mNoise">—</span><span class="unit">dB</span></div>
+      <div class="metric"><span class="label">语音保真</span><span class="value" id="mSpeech">—</span><span class="unit">dB</span></div>
+      <div class="metric"><span class="label">处理耗时</span><span class="value" id="mCost">—</span><span class="unit">ms</span></div>
+      <div class="metric"><span class="label">实时率 RTF</span><span class="value" id="mRtf">—</span><span class="unit">×</span></div>
+      <div class="metric"><span class="label">音频时长</span><span class="value" id="mDur">—</span><span class="unit">s</span></div>
+    </div>
+    <p class="tip" id="metricTip"></p>
+
+    <button id="downloadBtn" class="ghost" disabled>下载增强后的 WAV</button>
+  </section>
+</main>
+
+<footer>
+  模型为频域复数掩码 U-Net，训练数据 VoiceBank-DEMAND（28 说话人 / 16 kHz）。
+  全部计算在本机 CPU 完成，页面不请求任何外部资源。
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>
