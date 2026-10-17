@@ -81,8 +81,7 @@ paths:
 
 ## 脚本说明
 
-！！！这部分可忽略！！！
-<!-- ### `download.py`
+### `download.py`
 
 ```bash
 python download.py                                  # 目录/代理/重试次数都读 config
